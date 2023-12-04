@@ -3,7 +3,77 @@
 const assert = require('assert')
 const debug = require('debug')('record')
 const { spawn } = require('child_process')
-const recorders = require('./recorders')
+const recorders = {
+    arecord: (options) => {
+        const cmd = 'arecord'
+
+        const args = [
+            '-q', // show no progress
+            '-r', options.sampleRate, // sample rate
+            '-c', options.channels, // channels
+            '-t', options.audioType, // audio type
+            '-f', 'S16_LE', // Sample format
+            '-' // pipe
+        ]
+
+        if (options.device) {
+            args.unshift('-D', options.device)
+        }
+
+        return { cmd, args }
+    },
+    rec: (options) => {
+        const cmd = 'rec'
+
+        let args = [
+            '-q', // show no progress
+            '-r', options.sampleRate, // sample rate
+            '-c', options.channels, // channels
+            '-e', 'signed-integer', // sample encoding
+            '-b', '16', // precision (bits)
+            '-t', options.audioType, // audio type
+            '-' // pipe
+        ]
+
+        if (options.endOnSilence) {
+            args = args.concat([
+                'silence', '1', '0.1', options.thresholdStart || options.threshold + '%',
+                '1', options.silence, options.thresholdEnd || options.threshold + '%'
+            ])
+        }
+
+        return { cmd, args }
+    },
+    sox: (options) => {
+        const cmd = 'sox'
+
+        let args = [
+            '--default-device',
+            '--no-show-progress', // show no progress
+            '--rate', options.sampleRate, // sample rate
+            '--channels', options.channels, // channels
+            '--encoding', 'signed-integer', // sample encoding
+            '--bits', '16', // precision (bits)
+            '--type', options.audioType, // audio type
+            '-' // pipe
+        ]
+
+        if (options.endOnSilence) {
+            args = args.concat([
+                'silence', '1', '0.1', options.thresholdStart || options.threshold + '%',
+                '1', options.silence, options.thresholdEnd || options.threshold + '%'
+            ])
+        }
+
+        const spawnOptions = {}
+
+        if (options.device) {
+            spawnOptions.env = { ...process.env, AUDIODEV: options.device }
+        }
+
+        return { cmd, args, spawnOptions }
+    }
+}
 
 class Recording {
     constructor(options = {}) {
@@ -24,8 +94,8 @@ class Recording {
         if (!options.hasOwnProperty('cmd') && options.hasOwnProperty('recorder')) options.cmd = options.recorder;
         this.options = Object.assign(defaults, options)
 
-        const recorder = recorders.load(this.options.recorder)
-        const { args, spawnOptions = {} } = recorder(this.options)
+        const recorder = recorders[this.options.recorder];
+        const { args, spawnOptions = {} } = recorder(this.options);
         const cmd = options.cmd;
 
         this.cmd = cmd
