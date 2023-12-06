@@ -130,7 +130,7 @@ Enable debugging with the environment variable DEBUG=record.`
         })
 
         err.on('data', chunk => {
-            debug(`STDERR: ${chunk}`)
+            console.debug(`STDERR: ${chunk.toString()}`)
         })
 
         rec.on('data', chunk => {
