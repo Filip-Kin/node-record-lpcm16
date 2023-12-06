@@ -65,10 +65,12 @@ const recorders = {
             ])
         }
 
-        const spawnOptions = {}
+        const spawnOptions = { shell: true }
 
         if (options.device) {
-            spawnOptions.env = { ...process.env, AUDIODEV: options.device }
+            args.splice(args.length - 3, 0, `--type waveaudio "${options.device}"`)
+        } else {
+            args.splice(0, 0, '--default-device');
         }
 
         return { cmd, args, spawnOptions }
