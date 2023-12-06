@@ -1,7 +1,7 @@
 {
     "name": "@filip96/node-record-lpcm16",
     "author": "Gilles De Mey",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "Record a microphone input stream",
     "license": "ISC",
     "main": "index.js",
