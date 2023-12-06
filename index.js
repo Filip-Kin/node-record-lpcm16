@@ -50,8 +50,6 @@ const recorders = {
         let args = [
             '--default-device',
             '--no-show-progress', // show no progress
-            '--rate', options.sampleRate, // sample rate
-            '--channels', options.channels, // channels
             '--encoding', 'signed-integer', // sample encoding
             '--bits', '16', // precision (bits)
             '--type', options.audioType, // audio type
